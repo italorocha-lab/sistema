@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Revenda iPhone</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <style>
+        :root {
+            --bg: #f5f6f8;
+            --surface: #fff;
+            --surface2: #f0f2f5;
+            --text: #1a1d23;
+            --text2: #5a5f6b;
+            --border: #e2e5ea;
+            --primary: #2563eb;
+            --primary2: #1d4ed8;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+            --shadow: 0 1px 3px rgba(0,0,0,.08);
+            --shadow2: 0 4px 16px rgba(0,0,0,.12);
+            --radius: 12px;
+            --sidebar-w: 260px;
+            --font: 'Inter', 'Segoe UI', sans-serif;
+            --zebra: #fafbfc;
+            --input-bg: #fff;
+            --modal-bg: #fff;
+            --card-bg: #fff;
+            --hover-row: #f5f7fa;
+            --badge-green: #dcfce7;
+            --badge-red: #fef2f2;
+            --badge-yellow: #fef9e7;
+            --badge-blue: #eff6ff;
+            --text-green: #166534;
+            --text-red: #991b1b;
+            --text-yellow: #92400e;
+            --text-blue: #1e40af;
+        }
+        .dark {
+            --bg: #1a1d23;
+            --surface: #22252d;
+            --surface2: #2a2d37;
+            --text: #e8eaef;
+            --text2: #a8acb8;
+            --border: #353845;
+            --primary: #3b82f6;
+            --primary2: #60a5fa;
+            --shadow: 0 1px 3px rgba(0,0,0,.3);
+            --shadow2: 0 4px 16px rgba(0,0,0,.5);
+            --zebra: #282b35;
+            --input-bg: #2a2d37;
+            --modal-bg: #22252d;
+            --card-bg: #22252d;
+            --hover-row: #2e313c;
+            --badge-green: #0f2f1f;
+            --badge-red: #3b1515;
+            --badge-yellow: #3b2e0f;
+            --badge-blue: #0f1f3b;
+            --text-green: #4ade80;
+            --text-red: #f87171;
+            --text-yellow: #fbbf24;
+            --text-blue: #60a5fa;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            transition: background .3s, color .3s;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        #login-screen {
+            position: fixed; inset: 0; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; flex-direction: column; gap: 20px;
+            transition: opacity .4s;
+        }
+        #login-screen.hidden { opacity: 0; pointer-events: none; }
+        #login-screen .login-card {
+            background: var(--surface); padding: 32px 24px; border-radius: 20px;
+            box-shadow: var(--shadow2); width: 340px; max-width: 90vw;
+            text-align: center; border: 1px solid var(--border);
+        }
+        #login-screen .login-card h1 { font-size: 1.4rem; margin-bottom: 4px; font-weight: 700; }
+        #login-screen .login-card .logo-icon { font-size: 3rem; margin-bottom: 10px; }
+        #login-screen input {
+            width: 100%; padding: 14px 16px; border-radius: 14px;
+            border: 1px solid var(--border); font-size: 1rem;
+            background: var(--input-bg); color: var(--text);
+            font-family: var(--font); margin: 10px 0; transition: .2s;
+        }
+        #login-screen input:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+        #login-screen button {
+            width: 100%; padding: 14px; background: var(--primary); color: #fff;
+            border: none; border-radius: 14px; font-size: 1rem; cursor: pointer;
+            font-weight: 600; font-family: var(--font); transition: .2s;
+            min-height: 48px;
+        }
+        #login-screen button:hover { background: var(--primary2); }
+        #login-screen .error-msg { color: var(--danger); font-size: .85rem; min-height: 20px; }
+        #sidebar {
+            width: var(--sidebar-w); background: var(--surface);
+            border-right: 1px solid var(--border); display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+            transition: transform .3s, opacity .3s; box-shadow: var(--shadow);
+            overflow-y: auto; padding: 16px 0; -webkit-overflow-scrolling: touch;
+        }
+        #sidebar .logo-area {
+            padding: 20px 24px; font-weight: 700; font-size: 1.2rem;
+            border-bottom: 1px solid var(--border); margin-bottom: 8px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        #sidebar nav a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 24px; text-decoration: none; color: var(--text);
+            font-size: 1rem; border-radius: 0 20px 20px 0; margin: 2px 12px 2px 0;
+            transition: .15s; cursor: pointer; white-space: nowrap;
+            min-height: 48px;
+        }
+        #sidebar nav a:hover, #sidebar nav a.active { background: var(--primary); color: #fff; }
+        #sidebar .sidebar-footer {
+            margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border);
+            display: flex; flex-direction: column; gap: 8px; font-size: .85rem;
+        }
+        #sidebar .sidebar-footer button {
+            background: var(--surface2); border: 1px solid var(--border);
+            color: var(--text); padding: 12px 14px; border-radius: 12px;
+            cursor: pointer; font-family: var(--font); font-size: .85rem;
+            transition: .15s; text-align: left; min-height: 44px;
+        }
+        #sidebar .sidebar-footer button:hover { background: var(--border); }
+        #overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 99;
+            display: none; backdrop-filter: blur(2px);
+        }
+        #main-content {
+            margin-left: var(--sidebar-w); flex: 1; padding: 24px 20px;
+            transition: margin .3s; width: 100%; min-height: 100vh;
+            -webkit-overflow-scrolling: touch;
+        }
+        .page { display: none; animation: fadeSlide .35s ease; }
+        .page.active { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page-header {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 12px; margin-bottom: 20px;
+        }
+        .page-header h2 { font-size: 1.6rem; font-weight: 700; }
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 24px;
+        }
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px 14px; box-shadow: var(--shadow);
+            transition: .2s; cursor: default;
+        }
+        .card:active { transform: scale(0.98); }
+        .card .card-label { font-size: .75rem; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+        .card .card-value { font-size: 1.6rem; font-weight: 700; }
+        .card .card-sub { font-size: .8rem; color: var(--text2); margin-top: 2px; }
+        .btn {
+            padding: 12px 18px; border-radius: 14px; border: 1px solid transparent;
+            cursor: pointer; font-family: var(--font); font-size: .95rem; font-weight: 500;
+            transition: .15s; display: inline-flex; align-items: center; gap: 8px;
+            white-space: nowrap; min-height: 44px; justify-content: center;
+        }
+        .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-primary:active { background: var(--primary2); }
+        .btn-outline { background: transparent; border-color: var(--border); color: var(--text); }
+        .btn-outline:active { background: var(--surface2); }
+        .btn-sm { padding: 8px 14px; font-size: .8rem; min-height: 36px; }
+        .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .btn-success { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn-warn { background: var(--warn); color: #000; border-color: var(--warn); }
+        .btn-icon {
+            background: transparent; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 8px 10px; border-radius: 8px;
+            color: var(--text); transition: .15s; min-width: 44px; min-height: 44px;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .btn-icon:active { background: var(--surface2); }
+        table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); font-size: .85rem; }
+        table thead { position: sticky; top: 0; z-index: 2; }
+        table thead th {
+            background: var(--surface2); padding: 12px 10px; text-align: left; font-weight: 600;
+            cursor: pointer; user-select: none; white-space: nowrap; border-bottom: 2px solid var(--border);
+            color: var(--text2); font-size: .75rem; text-transform: uppercase; letter-spacing: .3px;
+        }
+        table thead th:active { color: var(--primary); }
+        table tbody td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        table tbody tr:nth-child(even) { background: var(--zebra); }
+        table tbody tr:active { background: var(--hover-row); }
+        table tbody tr.clickable { cursor: pointer; }
+        .table-wrap {
+            overflow-x: auto; max-height: 65vh; overflow-y: auto; border-radius: 16px;
+            border: 1px solid var(--border); -webkit-overflow-scrolling: touch;
+        }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: .75rem; font-weight: 600; }
+        .badge-green { background: var(--badge-green); color: var(--text-green); }
+        .badge-red { background: var(--badge-red); color: var(--text-red); }
+        .badge-yellow { background: var(--badge-yellow); color: var(--text-yellow); }
+        .badge-blue { background: var(--badge-blue); color: var(--text-blue); }
+        .form-row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px; }
+        .form-group label { font-size: .8rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .3px; }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border);
+            font-family: var(--font); font-size: 1rem; background: var(--input-bg);
+            color: var(--text); transition: .15s; width: 100%; -webkit-appearance: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .imei-valid { border-color: #10b981 !important; background: #f0fdf7 !important; }
+        .imei-invalid { border-color: #ef4444 !important; background: #fef5f5 !important; }
+        .dark .imei-valid { background: #0a2f1a !important; }
+        .dark .imei-invalid { background: #3b1515 !important; }
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200;
+            display: flex; align-items: flex-end; justify-content: center;
+            animation: fadeIn .2s ease;
+        }
+        @media (min-width: 768px) { .modal-overlay { align-items: center; } }
+        .modal {
+            background: var(--modal-bg); border-radius: 20px 20px 0 0; padding: 24px 20px;
+            max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;
+            box-shadow: var(--shadow2); border: 1px solid var(--border); position: relative;
+            margin-top: auto;
+        }
+        @media (min-width: 768px) { .modal { border-radius: 20px; margin: 0; } }
+        .modal h3 { margin-bottom: 16px; font-size: 1.3rem; font-weight: 700; }
+        .modal .close-btn {
+            position: absolute; top: 12px; right: 16px; background: none;
+            border: none; font-size: 1.8rem; cursor: pointer; color: var(--text2);
+            min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center;
+        }
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 14px 24px; border-radius: 20px; box-shadow: var(--shadow2);
+            z-index: 300; font-weight: 500; animation: fadeSlide .3s ease;
+            max-width: 90vw; white-space: nowrap; text-align: center; font-size: .95rem;
+        }
+        .search-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .search-bar input {
+            padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border);
+            font-family: var(--font); background: var(--input-bg); color: var(--text);
+            width: 100%; max-width: 240px; font-size: 1rem;
+        }
+        .hamburger {
+            display: none; background: none; border: none; font-size: 2rem;
+            cursor: pointer; color: var(--text); padding: 8px; min-width: 48px; min-height: 48px;
+        }
+        @media (max-width: 768px) {
+            #sidebar { transform: translateX(-100%); width: 280px; }
+            #sidebar.open { transform: translateX(0); }
+            #overlay.show { display: block; }
+            #main-content { margin-left: 0 !important; padding: 16px 12px; }
+            .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+            .cards-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .form-row { flex-direction: column; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .modal { width: 100%; max-height: 90vh; border-radius: 24px 24px 0 0; padding: 20px 16px; }
+            .page-header h2 { font-size: 1.4rem; }
+            .btn { padding: 14px 18px; font-size: 1rem; }
+            .btn-sm { padding: 10px 14px; }
+            table { font-size: .8rem; }
+            table thead th, table tbody td { padding: 10px 8px; }
+        }
+        @media (max-width: 500px) {
+            .cards-grid { grid-template-columns: 1fr 1fr; }
+            .card .card-value { font-size: 1.3rem; }
+            .card { padding: 14px 10px; }
+        }
+        .highlight-fiado { background: #fff3e0 !important; border-left: 4px solid var(--warn); }
+        .dark .highlight-fiado { background: #3b2e0f !important; }
+        .chart-container {
+            background: var(--surface); border-radius: 16px; padding: 16px;
+            box-shadow: var(--shadow); margin-bottom: 20px; max-width: 100%;
+        }
+        .chart-container canvas { max-height: 280px; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary); }
+        .barcode-img { display: block; margin: 10px auto; max-width: 100%; }
+        .table-wrap::-webkit-scrollbar { height: 4px; }
+        .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="logo-icon">📱</div>
+            <h1>Revenda iPhone</h1>
+            <p style="color:var(--text2);margin-bottom:12px;">Gestão de Estoque e Vendas</p>
+            <input type="password" id="login-password" placeholder="Senha" autocomplete="off">
+            <div class="error-msg" id="login-error"></div>
+            <button onclick="window.fazerLogin()">Entrar</button>
+            <p style="font-size:.7rem;color:var(--text2);margin-top:10px;">Senha padrão: <strong>admin</strong></p>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="logo-area">📱 Revenda iPhone</div>
+        <nav>
+            <a data-page="dashboard" class="active" onclick="window.navegar('dashboard')">📊 Dashboard</a>
+            <a data-page="estoque" onclick="window.navegar('estoque')">📦 Estoque</a>
+            <a data-page="entrada" onclick="window.navegar('entrada')">➕ Entrada</a>
+            <a data-page="saida" onclick="window.navegar('saida')">💰 Venda</a>
+            <a data-page="vendas" onclick="window.navegar('vendas')">📋 Histórico</a>
+            <a data-page="clientes" onclick="window.navegar('clientes')">👥 Clientes</a>
+            <a data-page="fornecedores" onclick="window.navegar('fornecedores')">🏭 Fornecedores</a>
+            <a data-page="garantias" onclick="window.navegar('garantias')">🛡️ Garantias</a>
+            <a data-page="log" onclick="window.navegar('log')">📝 Log</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="window.abrirConfig()">⚙️ Configurações</button>
+            <button onclick="window.trocarSenha()">🔒 Trocar Senha</button>
+            <button onclick="window.toggleTema()" id="btn-tema-sidebar">🌙 Tema Escuro</button>
+            <button onclick="window.fazerBackup()">💾 Backup</button>
+            <button onclick="document.getElementById('restore-input').click()">📥 Restaurar</button>
+            <input type="file" id="restore-input" accept=".json" style="display:none" onchange="window.restaurarBackup(this)">
+            <button onclick="window.exportarCSV()">📤 Exportar CSV</button>
+            <button onclick="window.fazerLogout()">🚪 Sair</button>
+        </div>
+    </aside>
+    <div id="overlay" onclick="window.fecharSidebar()"></div>
+
+    <!-- MAIN -->
+    <main id="main-content">
+        <!-- Dashboard -->
+        <div class="page active" id="page-dashboard">
+            <div class="page-header">
+                <h2>📊 Dashboard</h2>
+                <div class="search-bar">
+                    <input type="text" id="busca-global" placeholder="🔍 Buscar modelo, IMEI..." oninput="window.buscaGlobal()">
+                </div>
+            </div>
+            <div class="cards-grid" id="dashboard-cards"></div>
+            <div class="chart-container"><canvas id="chart-vendas"></canvas></div>
+            <h3 style="margin-bottom:8px;">Últimas Vendas</h3>
+            <div class="table-wrap" style="max-height:35vh;">
+                <table><thead><tr><th>Data</th><th>Modelo</th><th>IMEI</th><th>Venda</th><th>Lucro</th><th>Cliente</th><th>Status</th></tr></thead>
+                    <tbody id="tabela-ultimas-vendas"></tbody></table>
+            </div>
+            <div id="alert-fiados" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- Estoque -->
+        <div class="page" id="page-estoque">
+            <div class="page-header">
+                <h2>📦 Estoque</h2>
+                <div class="flex-between" style="gap:8px;">
+                    <select id="filtro-status-estoque" onchange="window.renderEstoque()" style="padding:8px 12px;border-radius:20px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);">
+                        <option value="disponivel">Disponível</option><option value="vendido">Vendido</option><option value="todos">Todos</option>
+                    </select>
+                    <input type="text" id="busca-estoque" placeholder="Buscar..." oninput="window.renderEstoque()" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);width:180px;">
+                    <button class="btn btn-primary btn-sm">+ Entrada</button>
+                    <button class="btn btn-outline btn-sm">📥 Lote</button>
+                </div>
+            </div>
+            <div class="table-wrap" style="max-height:60vh;">
+                <table id="tabela-estoque"><thead><tr>
+                            <th data-sort="modelo">Modelo</th><th data-sort="imei">IMEI</th><th data-sort="condicao">Condição</th><th data-sort="cor">Cor</th>
+                            <th data-sort="armazenamento">Armaz.</th><th data-sort="custo">Custo</th><th data-sort="preco">Preço</th><th data-sort="fornecedor">Fornecedor</th>
+                            <th data-sort="status">Status</th><th>Ações</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <!-- Entrada -->
+        <div class="page" id="page-entrada">
+            <div class="page-header"><h2>➕ Entrada Individual</h2></div>
+            <form id="form-entrada" onsubmit="window.salvarEntrada(event)" style="max-width:700px;">
+                <div class="form-row">
+                    <div class="form-group"><label>Modelo *</label><input type="text" id="ent-modelo" required placeholder="Ex: iPhone 14 Pro Max"></div>
+                    <div class="form-group"><label>IMEI *</label><input type="text" id="ent-imei" required placeholder="15 dígitos" maxlength="15" oninput="window.validarIMEIVisual(this)"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cor</label><input type="text" id="ent-cor" placeholder="Ex: Preto"></div>
+                    <div class="form-group"><label>Armazenamento</label><input type="text" id="ent-armazenamento" placeholder="Ex: 256GB"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Custo (R$)*</label><input type="number" id="ent-custo" step="0.01" required></div>
+                    <div class="form-group"><label>Preço de Venda (R$)*</label><input type="number" id="ent-preco" step="0.01" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Fornecedor</label><input type="text" id="ent-fornecedor" list="lista-fornecedores" onchange="window.atualizarTelFornEntrada()"><datalist id="lista-fornecedores"></datalist></div>
+                    <div class="form-group"><label>Tel. Fornecedor</label><input type="text" id="ent-tel-fornecedor"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Condição</label><select id="ent-condicao" onchange="window.atualizarCondicaoEntrada()"><option value="Novo">Novo</option><option value="Seminovo">Seminovo</option></select></div>
+                    <div class="form-group"><label>Garantia (meses)</label><input type="number" id="ent-garantia" value="12"></div>
+                </div>
+                <div id="extra-seminovo-ent" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group"><label>Saúde da Bateria (%)</label><input type="number" id="ent-bateria" min="0" max="100" value="100"></div>
+                        <div class="form-group"><label>Estado de Conservação</label><input type="text" id="ent-conservacao" placeholder="Ex: Excelente"></div>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:4px;"><label>Observação</label><textarea id="ent-obs" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-primary" style="margin-top:8px;">💾 Salvar Entrada</button>
+                <button type="button" class="btn btn-outline" style="margin-top:8px;margin-left:6px;">📥 Entrada em Lote</button>
+            </form>
+        </div>
+
+        <!-- Venda -->
+        <div class="page" id="page-saida">
+            <div class="page-header"><h2>💰 Venda Individual</h2></div>
+            <form id="form-saida" onsubmit="window.realizarVenda(event)" style="max-width:700px;">
+                <div class="form-row">
+                    <div class="form-group"><label>Item do Estoque *</label>
+                        <select id="saida-item" required onchange="window.preencherVenda()">
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Modelo</label><input type="text" id="saida-modelo" readonly></div>
+                    <div class="form-group"><label>IMEI</label><input type="text" id="saida-imei" readonly></div>
+                    <div class="form-group"><label>Custo (R$)</label><input type="text" id="saida-custo" readonly></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Valor de Venda (R$)*</label><input type="number" id="saida-valor" step="0.01" required oninput="window.calcLucroPreview()"></div>
+                    <div class="form-group"><label>Despesas (R$)</label><input type="number" id="saida-despesas" step="0.01" value="0" oninput="window.calcLucroPreview()"></div>
+                    <div class="form-group"><label>Lucro Estimado (R$)</label><input type="text" id="saida-lucro" readonly></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Forma Pagamento *</label><select id="saida-pagamento" required onchange="window.toggleParcelasVenda()">
+                            <option value="PIX">PIX</option><option value="Débito">Débito</option><option value="Crédito à vista">Crédito à vista</option>
+                            <option value="Crédito parcelado">Crédito parcelado</option><option value="Fiado">Fiado</option></select></div>
+                    <div class="form-group" id="grupo-parcelas" style="display:none;"><label>Nº Parcelas</label><input type="number" id="saida-parcelas" min="2" max="18" value="2" oninput="window.calcParcelaVenda()"></div>
+                    <div class="form-group" id="grupo-valor-parcela" style="display:none;"><label>Valor Parcela (R$)</label><input type="text" id="saida-valor-parcela" readonly></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cliente *</label><input type="text" id="saida-cliente" required list="lista-clientes" placeholder="Nome do cliente"><datalist id="lista-clientes"></datalist></div>
+                </div>
+                <div class="form-group"><label>Observação</label><textarea id="saida-obs" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-success" style="margin-top:8px;">✅ Confirmar Venda</button>
+                <button type="button" class="btn btn-outline" style="margin-top:8px;margin-left:6px;">📦 Venda em Lote</button>
+            </form>
+        </div>
+
+        <!-- Histórico de Vendas -->
+        <div class="page" id="page-vendas">
+            <div class="page-header">
+                <h2>📋 Histórico de Vendas</h2>
+                <div class="flex-between" style="gap:8px;">
+                    <select id="filtro-status-vendas" onchange="window.renderVendas()" style="padding:8px 12px;border-radius:20px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);">
+                        <option value="todos">Todos</option><option value="concluida">Concluída</option><option value="fiado">Fiado</option><option value="cancelada">Cancelada</option>
+                    </select>
+                    <input type="text" id="busca-vendas" placeholder="Buscar..." oninput="window.renderVendas()" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);width:180px;">
+                </div>
+            </div>
+            <div class="table-wrap" style="max-height:60vh;">
+                <table id="tabela-vendas"><thead><tr><th>Data</th><th>Modelo</th><th>IMEI</th><th>Venda</th><th>Lucro</th><th>Despesas</th><th>Pagamento</th><th>Cliente</th><th>Status</th><th>Ações</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <!-- Clientes -->
+        <div class="page" id="page-clientes">
+            <div class="page-header"><h2>👥 Clientes</h2><button class="btn btn-primary btn-sm" onclick="window.abrirModalCliente()">+ Novo</button></div>
+            <div class="table-wrap" style="max-height:60vh;">
+                <table><thead><tr><th>Nome</th><th>Telefone</th><th>Email</th><th>Compras</th><th>Ações</th></tr></thead><tbody id="tabela-clientes"></tbody></table>
+            </div>
+        </div>
+
+        <!-- Fornecedores -->
+        <div class="page" id="page-fornecedores">
+            <div class="page-header"><h2>🏭 Fornecedores</h2><button class="btn btn-primary btn-sm" onclick="window.abrirModalFornecedor()">+ Novo</button></div>
+            <div class="table-wrap" style="max-height:60vh;">
+                <table><thead><tr><th>Nome</th><th>Telefone</th><th>Email</th><th>Itens Fornecidos</th><th>Ações</th></tr></thead><tbody id="tabela-fornecedores"></tbody></table>
+            </div>
+        </div>
+
+        <!-- Garantias -->
+        <div class="page" id="page-garantias">
+            <div class="page-header"><h2>🛡️ Garantias</h2></div>
+            <div class="table-wrap" style="max-height:60vh;">
+                <table><thead><tr><th>Modelo</th><th>IMEI</th><th>Data Entrada</th><th>Garantia Até</th><th>Dias Restantes</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabela-garantias"></tbody></table>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div class="page" id="page-log">
+            <div class="page-header"><h2>📝 Log de Atividades</h2><button class="btn btn-danger btn-sm" onclick="window.limparLog()">🗑️ Limpar Log</button></div>
+            <div class="table-wrap" style="max-height:60vh;">
+                <table><thead><tr><th>Data/Hora</th><th>Ação</th><th>Detalhes</th></tr></thead><tbody id="tabela-log"></tbody></table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAIS -->
+    <div id="modal-entrada" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal"><button class="close-btn" onclick="document.getElementById('modal-entrada').style.display='none'">✕</button><h3>➕ Entrada Rápida</h3>
+            <form onsubmit="window.salvarEntradaModal(event)"><div id="modal-entrada-content"></div>
+                <button type="submit" class="btn btn-primary">Salvar</button></form></div></div>
+
+    <div id="modal-lote" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal"><button class="close-btn" onclick="document.getElementById('modal-lote').style.display='none'">✕</button><h3>📥 Entrada em Lote</h3>
+            <form onsubmit="window.salvarLote(event)"><div class="form-row">
+                    <div class="form-group"><label>Modelo*</label><input type="text" id="lote-modelo" required></div>
+                    <div class="form-group"><label>Cor</label><input type="text" id="lote-cor"></div>
+                    <div class="form-group"><label>Armazenamento</label><input type="text" id="lote-armazenamento"></div></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Condição</label><select id="lote-condicao" onchange="document.getElementById('lote-garantia').value=this.value==='Seminovo'?'1':'12'"><option>Novo</option><option>Seminovo</option></select></div>
+                    <div class="form-group"><label>Garantia (meses)</label><input type="number" id="lote-garantia" value="12"></div>
+                    <div class="form-group"><label>Fornecedor</label><input type="text" id="lote-fornecedor" list="lista-fornecedores"><datalist id="lista-fornecedores-lote"></datalist></div>
+                    <div class="form-group"><label>Tel. Fornecedor</label><input type="text" id="lote-tel-fornecedor"></div></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Custo (R$)*</label><input type="number" id="lote-custo" step="0.01" required></div>
+                    <div class="form-group"><label>Preço (R$)*</label><input type="number" id="lote-preco" step="0.01" required></div></div>
+                <div class="form-group"><label>Lista de IMEIs (um por linha)</label><textarea id="lote-imeis" rows="5" placeholder="350000000000001&#10;350000000000002"></textarea></div>
+                <div class="form-row"><div class="form-group"><label>Ou gerar IMEIs provisórios (quantidade):</label><input type="number" id="lote-qtd-gerar" min="1" value="" placeholder="Qtd."></div></div>
+                <button type="submit" class="btn btn-primary">📥 Registrar Lote</button></form></div></div>
+
+    <div id="modal-venda-lote" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal" style="max-width:800px;"><button class="close-btn" onclick="document.getElementById('modal-venda-lote').style.display='none'">✕</button><h3>📦 Venda em Lote</h3>
+            <input type="text" id="filtro-lote-venda" placeholder="🔍 Filtrar itens..." oninput="window.renderVendaLoteTabela()" style="margin-bottom:8px;padding:8px 12px;border-radius:20px;border:1px solid var(--border);width:100%;background:var(--input-bg);color:var(--text);">
+            <div class="table-wrap" style="max-height:35vh;margin-bottom:10px;"><table><thead><tr><th><input type="checkbox" id="check-todos-lote" onchange="window.toggleTodosLote()"></th><th>Modelo</th><th>IMEI</th><th>Condição</th><th>Cor</th><th>Armaz.</th><th>Preço</th></tr></thead><tbody id="tabela-venda-lote"></tbody></table></div>
+            <form onsubmit="window.confirmarVendaLote(event)"><div class="form-row">
+                    <div class="form-group"><label>Forma Pagamento*</label><select id="vl-pagamento" required onchange="window.toggleParcelasVL()"><option value="PIX">PIX</option><option value="Débito">Débito</option><option value="Crédito à vista">Crédito à vista</option><option value="Crédito parcelado">Crédito parcelado</option><option value="Fiado">Fiado</option></select></div>
+                    <div class="form-group" id="vl-grupo-parcelas" style="display:none;"><label>Nº Parcelas</label><input type="number" id="vl-parcelas" min="2" max="18" value="2"></div>
+                    <div class="form-group"><label>Desconto por item (R$)</label><input type="number" id="vl-desconto" step="0.01" value="0"></div>
+                    <div class="form-group"><label>Despesas por item (R$)</label><input type="number" id="vl-despesas" step="0.01" value="0"></div></div>
+                <div class="form-row"><div class="form-group"><label>Cliente*</label><input type="text" id="vl-cliente" required list="lista-clientes"></div></div>
+                <div class="form-group"><label>Observação</label><textarea id="vl-obs" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-success">✅ Confirmar Vendas</button></form></div></div>
+
+    <div id="modal-recibo" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal" id="recibo-content" style="max-width:500px;"><button class="close-btn" onclick="document.getElementById('modal-recibo').style.display='none'">✕</button>
+            <div id="recibo-inner"></div><button class="btn btn-primary btn-sm" onclick="window.copiarRecibo()">📋 Copiar</button>
+            <button class="btn btn-success btn-sm" style="margin-left:6px;" onclick="window.enviarWhatsApp()">💬 WhatsApp</button></div></div>
+
+    <div id="modal-etiqueta" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal" style="max-width:420px;text-align:center;"><button class="close-btn" onclick="document.getElementById('modal-etiqueta').style.display='none'">✕</button><h3>🏷️ Etiqueta</h3>
+            <svg id="barcode-svg"></svg><p id="etiqueta-imei" style="font-weight:700;margin-top:6px;"></p></div></div>
+
+    <div id="modal-detalhes-venda" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal" id="detalhes-venda-content"><button class="close-btn" onclick="document.getElementById('modal-detalhes-venda').style.display='none'">✕</button><div id="detalhes-venda-inner"></div></div></div>
+
+    <div id="modal-cliente" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal"><button class="close-btn" onclick="document.getElementById('modal-cliente').style.display='none'">✕</button><h3 id="titulo-modal-cliente">Novo Cliente</h3>
+            <form onsubmit="window.salvarCliente(event)"><input type="hidden" id="cliente-id"><div class="form-row">
+                    <div class="form-group"><label>Nome*</label><input type="text" id="cliente-nome" required></div>
+                    <div class="form-group"><label>Telefone</label><input type="text" id="cliente-tel"></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="cliente-email"></div></div>
+                <button type="submit" class="btn btn-primary">Salvar</button></form></div></div>
+
+    <div id="modal-fornecedor" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal"><button class="close-btn" onclick="document.getElementById('modal-fornecedor').style.display='none'">✕</button><h3 id="titulo-modal-fornecedor">Novo Fornecedor</h3>
+            <form onsubmit="window.salvarFornecedor(event)"><input type="hidden" id="fornecedor-id"><div class="form-row">
+                    <div class="form-group"><label>Nome*</label><input type="text" id="fornecedor-nome" required></div>
+                    <div class="form-group"><label>Telefone</label><input type="text" id="fornecedor-tel"></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="fornecedor-email"></div></div>
+                <button type="submit" class="btn btn-primary">Salvar</button></form></div></div>
+
+    <div id="modal-config" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal"><button class="close-btn" onclick="document.getElementById('modal-config').style.display='none'">✕</button><h3>⚙️ Configurações</h3>
+            <form onsubmit="window.salvarConfig(event)"><div class="form-group"><label>URL do Logotipo</label><input type="text" id="cfg-logo" placeholder="https://... ou data:image..."></div>
+                <div class="form-group"><label>Termos de Garantia (aparece no recibo)</label><textarea id="cfg-garantia" rows="3" placeholder="Ex: 90 dias de garantia contra defeitos de fabricação."></textarea></div>
+                <button type="submit" class="btn btn-primary">Salvar Configurações</button></form></div></div>
+
+    <div id="modal-trocar-senha" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal"><button class="close-btn" onclick="document.getElementById('modal-trocar-senha').style.display='none'">✕</button><h3>🔒 Trocar Senha</h3>
+            <form onsubmit="window.confirmarTrocaSenha(event)"><div class="form-group"><label>Senha Atual</label><input type="password" id="senha-atual" required></div>
+                <div class="form-group"><label>Nova Senha</label><input type="password" id="senha-nova" required minlength="3"></div>
+                <div class="form-group"><label>Confirmar Nova Senha</label><input type="password" id="senha-nova-conf" required></div>
+                <button type="submit" class="btn btn-primary">Alterar Senha</button></form></div></div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        (function() {
+            // Chaves do localStorage
+            const K_DATA = 'revenda_iphone_v2pro';
+            const K_LOG = 'revenda_iphone_log';
+            const K_CONFIG = 'revenda_iphone_config';
+            const K_PWHASH = 'revenda_iphone_pwhash';
+            const K_SESSION = 'revenda_iphone_session';
+            const K_TEMA = 'revenda_iphone_tema';
+
+            // Estado da aplicação
+            let data = { estoque: [], vendas: [], fornecedores: [], clientes: [] };
+            let log = [];
+            let config = { logo: '', termosGarantia: 'Garantia conforme condições do produto.' };
+            let sessionActive = false;
+            let currentPage = 'dashboard';
+            let sortColumn = null;
+            let sortDir = 1;
+
+            // Helpers
+            const $ = (s) => document.querySelector(s);
+            const $$ = (s) => document.querySelectorAll(s);
+
+            function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+            function getData() { try { return JSON.parse(localStorage.getItem(K_DATA)) || { estoque: [], vendas: [], fornecedores: [], clientes: [] }; } catch (e) { return { estoque: [], vendas: [], fornecedores: [], clientes: [] }; } }
+            function saveData() { localStorage.setItem(K_DATA, JSON.stringify(data)); }
+
+            function getLog() { try { return JSON.parse(localStorage.getItem(K_LOG)) || []; } catch (e) { return []; } }
+            function saveLog() { localStorage.setItem(K_LOG, JSON.stringify(log)); }
+
+            function getConfig() { try { return JSON.parse(localStorage.getItem(K_CONFIG)) || { logo: '', termosGarantia: 'Garantia conforme condições do produto.' }; } catch (e) { return { logo: '', termosGarantia: 'Garantia conforme condições do produto.' }; } }
+            function saveConfig() { localStorage.setItem(K_CONFIG, JSON.stringify(config)); }
+
+            function addLog(acao, detalhes) {
+                log.push({ data: new Date().toISOString(), acao, detalhes });
+                if (log.length > 500) log = log.slice(-500);
+                saveLog();
+            }
+
+            function toast(msg, tipo) {
+                const container = $('#toast-container');
+                const el = document.createElement('div');
+                el.className = 'toast';
+                el.style.borderLeft = '4px solid ' + (tipo === 'erro' ? 'var(--danger)' : tipo === 'aviso' ? 'var(--warn)' : 'var(--accent)');
+                el.textContent = msg;
+                container.appendChild(el);
+                setTimeout(() => { el.remove(); }, 3000);
+            }
+
+            // Senha (SHA-256)
+            async function hashSenha(s) {
+                const enc = new TextEncoder().encode(s);
+                const hash = await crypto.subtle.digest('SHA-256', enc);
+                return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+            async function verificarSenha(s) {
+                const stored = localStorage.getItem(K_PWHASH);
+                if (!stored) return s === 'admin';
+                return await hashSenha(s) === stored;
+            }
+            async function definirSenha(s) {
+                localStorage.setItem(K_PWHASH, await hashSenha(s));
+            }
+
+            // Sessão
+            function checkSession() {
+                const sess = localStorage.getItem(K_SESSION);
+                if (sess === 'ativo') { sessionActive = true; $('#login-screen').classList.add('hidden'); carregarTudo(); }
+                else { sessionActive = false; $('#login-screen').classList.remove('hidden'); }
+            }
+
+            // Tema
+            function aplicarTema() {
+                const tema = localStorage.getItem(K_TEMA) || 'claro';
+                if (tema === 'escuro') { document.body.classList.add('dark'); $('#btn-tema-sidebar').textContent = '☀️ Tema Claro'; }
+                else { document.body.classList.remove('dark'); $('#btn-tema-sidebar').textContent = '🌙 Tema Escuro'; }
+            }
+
+            // Validação de IMEI (Luhn adaptado)
+            function validarIMEI(imei) {
+                if (!/^\d{15}$/.test(imei)) return false;
+                let sum = 0;
+                for (let i = 0; i < 15; i++) {
+                    let d = parseInt(imei[i]);
+                    if (i % 2 === 0) { d *= 2; if (d > 9) d -= 9; }
+                    sum += d;
+                }
+                return sum % 10 === 0;
+            }
+
+            // Navegação
+            function navegar(page) {
+                currentPage = page;
+                $$('.page').forEach(p => p.classList.remove('active'));
+                const target = $('#page-' + page);
+                if (target) target.classList.add('active');
+                $$('#sidebar nav a').forEach(a => a.classList.remove('active'));
+                const link = $('#sidebar nav a[data-page="' + page + '"]');
+                if (link) link.classList.add('active');
+                if (window.innerWidth < 768) fecharSidebar();
+                renderPagina();
+            }
+
+            function fecharSidebar() {
+                $('#sidebar').classList.remove('open');
+                $('#overlay').classList.remove('show');
+            }
+
+            function toggleSidebar() {
+                const sb = $('#sidebar');
+                if (sb.classList.contains('open')) { fecharSidebar(); }
+                else { sb.classList.add('open'); $('#overlay').classList.add('show'); }
+            }
+
+            // Carregar dados do localStorage
+            function carregarTudo() {
+                data = getData();
+                log = getLog();
+                config = getConfig();
+                aplicarTema();
+                preencherDatalists();
+                renderPagina();
+            }
+
+            // Preencher datalists e selects
+            function preencherDatalists() {
+                const fornList = $('#lista-fornecedores');
+                const fornListLote = $('#lista-fornecedores-lote');
+                const fornHTML = data.fornecedores.map(f => `<option value="${f.nome}">`).join('');
+                if (fornList) fornList.innerHTML = fornHTML;
+                if (fornListLote) fornListLote.innerHTML = fornHTML;
+                const cliList = $('#lista-clientes');
+                if (cliList) cliList.innerHTML = data.clientes.map(c => `<option value="${c.nome}">`).join('');
+                const saidaSelect = $('#saida-item');
+                if (saidaSelect) {
+                    const disp = data.estoque.filter(e => e.status === 'disponivel');
+                    if (disp.length > 0) {
+                        saidaSelect.innerHTML = '<option value="">Selecione o item...</option>' + disp.map(e =>
+                            `<option value="${e.id}" data-modelo="${e.modelo}" data-imei="${e.imei}" data-custo="${e.custo}" data-preco="${e.preco}">${e.modelo} - ${e.imei} - R$${parseFloat(e.preco||0).toFixed(2)}</option>`
+                        ).join('');
+                    } else {
+                        saidaSelect.innerHTML = '<option value="">Nenhum item disponível</option>';
+                    }
+                }
+            }
+
+            // Renderizar página ativa
+            function renderPagina() {
+                switch (currentPage) {
+                    case 'dashboard': renderDashboard(); break;
+                    case 'estoque': renderEstoque(); break;
+                    case 'entrada': preencherDatalists(); break;
+                    case 'saida': preencherDatalists(); break;
+                    case 'vendas': renderVendas(); break;
+                    case 'clientes': renderClientes(); break;
+                    case 'fornecedores': renderFornecedores(); break;
+                    case 'garantias': renderGarantias(); break;
+                    case 'log': renderLog(); break;
+                }
+            }
+
+            // ============ DASHBOARD ============
+            function renderDashboard() {
+                const agora = new Date();
+                const mesAtual = agora.getMonth();
+                const anoAtual = agora.getFullYear();
+                const disp = data.estoque.filter(e => e.status === 'disponivel');
+                const itensEstoque = disp.length;
+                const valorEstoque = disp.reduce((s, e) => s + parseFloat(e.custo || 0), 0);
+                const vendasMes = data.vendas.filter(v => { const d = new Date(v.data); return d.getMonth() === mesAtual && d.getFullYear() === anoAtual && v.status !== 'cancelada'; });
+                const vendasCount = vendasMes.length;
+                const lucroMes = vendasMes.reduce((s, v) => s + parseFloat(v.lucro || 0), 0);
+                const lucroTotal = data.vendas.filter(v => v.status !== 'cancelada').reduce((s, v) => s + parseFloat(v.lucro || 0), 0);
+                const fiados = data.vendas.filter(v => v.status === 'fiado');
+                const fiadosPendentes = fiados.reduce((s, v) => s + parseFloat(v.valorVenda || 0), 0);
+
+                $('#dashboard-cards').innerHTML = `
+                <div class="card"><div class="card-label">Itens em Estoque</div><div class="card-value">${itensEstoque}</div></div>
+                <div class="card"><div class="card-label">Valor em Estoque</div><div class="card-value">R$ ${valorEstoque.toFixed(2)}</div></div>
+                <div class="card"><div class="card-label">Lucro Total</div><div class="card-value">R$ ${lucroTotal.toFixed(2)}</div></div>
+                <div class="card"><div class="card-label">Vendas no Mês</div><div class="card-value">${vendasCount}</div></div>
+                <div class="card"><div class="card-label">Lucro no Mês</div><div class="card-value">R$ ${lucroMes.toFixed(2)}</div></div>
+                <div class="card"><div class="card-label">Fiados Pendentes</div><div class="card-value">R$ ${fiadosPendentes.toFixed(2)}</div><div class="card-sub">${fiados.length} venda(s)</div></div>`;
+
+                if (fiados.length > 0) {
+                    $('#alert-fiados').innerHTML = `<div style="background:var(--badge-yellow);color:var(--text-yellow);padding:12px 16px;border-radius:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>⚠️ Atenção:</strong> ${fiados.length} venda(s) fiada(s) pendente(s). <button class="btn btn-warn btn-sm" onclick="window.navegar('vendas');document.getElementById('filtro-status-vendas').value='fiado';window.renderVendas();">Ver Fiados</button></div>`;
+                } else { $('#alert-fiados').innerHTML = ''; }
+
+                renderGrafico();
+                const ultimas = [...data.vendas].filter(v => v.status !== 'cancelada').sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, 10);
+                $('#tabela-ultimas-vendas').innerHTML = ultimas.map(v => `
+                <tr class="clickable" onclick="window.abrirDetalhesVenda('${v.id}')">
+                <td>${new Date(v.data).toLocaleDateString('pt-BR')}</td><td>${v.modelo}</td><td>${v.imei}</td>
+                <td>R$${parseFloat(v.valorVenda||0).toFixed(2)}</td><td>R$${parseFloat(v.lucro||0).toFixed(2)}</td>
+                <td>${v.cliente||'-'}</td><td><span class="badge ${v.status==='concluida'?'badge-green':v.status==='fiado'?'badge-yellow':'badge-red'}">${v.status}</span></td></tr>`).join('') || '<tr><td colspan="7" class="empty-state">Nenhuma venda registrada.</td></tr>';
+            }
+
+            let chartInstance = null;
+            function renderGrafico() {
+                const dias = [];
+                const valores = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const diaStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                    dias.push(diaStr);
+                    const total = data.vendas.filter(v => { const vd = new Date(v.data); return vd.toDateString() === d.toDateString() && v.status !== 'cancelada'; }).reduce((s, v) => s + parseFloat(v.valorVenda || 0), 0);
+                    valores.push(total);
+                }
+                const ctx = $('#chart-vendas');
+                if (!ctx) return;
+                if (chartInstance) chartInstance.destroy();
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: dias, datasets: [{ label: 'Vendas (R$)', data: valores, backgroundColor: 'rgba(37,99,235,0.6)', borderColor: '#2563eb', borderWidth: 1, borderRadius: 6 }] },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$' + v } } } }
+                });
+            }
+
+            function buscaGlobal() {
+                const termo = ($('#busca-global')?.value || '').toLowerCase();
+                if (!termo) { renderDashboard(); return; }
+                const disp = data.estoque.filter(e => e.status === 'disponivel' && (e.modelo.toLowerCase().includes(termo) || e.imei.includes(termo)));
+                const vendasF = data.vendas.filter(v => v.status !== 'cancelada' && (v.modelo.toLowerCase().includes(termo) || v.imei.includes(termo) || (v.cliente || '').toLowerCase().includes(termo)));
+                $('#dashboard-cards').innerHTML = `<div class="card"><div class="card-label">🔍 Estoque: "${termo}"</div><div class="card-value">${disp.length} itens</div></div><div class="card"><div class="card-label">🔍 Vendas: "${termo}"</div><div class="card-value">${vendasF.length} vendas</div></div>`;
+                $('#tabela-ultimas-vendas').innerHTML = vendasF.slice(0, 10).map(v => `<tr class="clickable" onclick="window.abrirDetalhesVenda('${v.id}')"><td>${new Date(v.data).toLocaleDateString('pt-BR')}</td><td>${v.modelo}</td><td>${v.imei}</td><td>R$${parseFloat(v.valorVenda||0).toFixed(2)}</td><td>R$${parseFloat(v.lucro||0).toFixed(2)}</td><td>${v.cliente||'-'}</td><td><span class="badge ${v.status==='concluida'?'badge-green':'badge-yellow'}">${v.status}</span></td></tr>`).join('') || '<tr><td colspan="7" class="empty-state">Nenhum resultado.</td></tr>';
+            }
+
+            // ============ ESTOQUE ============
+            function renderEstoque() {
+                const filtro = $('#filtro-status-estoque')?.value || 'disponivel';
+                const busca = ($('#busca-estoque')?.value || '').toLowerCase();
+                let itens = [...data.estoque];
+                if (filtro === 'disponivel') itens = itens.filter(e => e.status === 'disponivel');
+                else if (filtro === 'vendido') itens = itens.filter(e => e.status === 'vendido');
+                if (busca) itens = itens.filter(e => e.modelo.toLowerCase().includes(busca) || e.imei.includes(busca) || (e.fornecedor || '').toLowerCase().includes(busca));
+                if (sortColumn) {
+                    itens.sort((a, b) => {
+                        let va = a[sortColumn] ?? ''; let vb = b[sortColumn] ?? '';
+                        if (typeof va === 'number') return (va - vb) * sortDir;
+                        return String(va).localeCompare(String(vb)) * sortDir;
+                    });
+                }
+                const tbody = $('#tabela-estoque tbody');
+                if (!tbody) return;
+                tbody.innerHTML = itens.map(e => `
+                <tr class="${e.status==='fiado'?'highlight-fiado':''}">
+                <td>${e.modelo}</td><td>${e.imei}</td><td>${e.condicao||'-'}</td><td>${e.cor||'-'}</td>
+                <td>${e.armazenamento||'-'}</td><td>R$${parseFloat(e.custo||0).toFixed(2)}</td><td>R$${parseFloat(e.preco||0).toFixed(2)}</td>
+                <td>${e.fornecedor||'-'}</td><td><span class="badge ${e.status==='disponivel'?'badge-green':e.status==='vendido'?'badge-red':'badge-yellow'}">${e.status}</span></td>
+                <td style="white-space:nowrap;">
+                ${e.status==='disponivel'?`<button class="btn-icon" title="Vender" onclick="window.venderDoEstoque('${e.id}')">💰</button>`:''}
+                <button class="btn-icon" title="Editar" onclick="window.editarEstoque('${e.id}')">✏️</button>
+                <button class="btn-icon" title="Excluir" onclick="window.excluirEstoque('${e.id}')">🗑️</button>
+                <button class="btn-icon" title="Etiqueta" onclick="window.abrirEtiqueta('${e.imei}')">🏷️</button>
+                </td></tr>`).join('') || '<tr><td colspan="10" class="empty-state">Nenhum item encontrado.</td></tr>';
+            }
+
+            function habilitarOrdenacao() {
+                $$('#tabela-estoque thead th[data-sort]').forEach(th => {
+                    th.addEventListener('click', () => {
+                        const col = th.dataset.sort;
+                        if (sortColumn === col) sortDir *= -1;
+                        else { sortColumn = col; sortDir = 1; }
+                        renderEstoque();
+                    });
+                });
+            }
+
+            function venderDoEstoque(id) {
+                const item = data.estoque.find(e => e.id === id);
+                if (!item || item.status !== 'disponivel') return toast('Item não disponível.', 'erro');
+                navegar('saida');
+                setTimeout(() => {
+                    const sel = $('#saida-item');
+                    if (sel) sel.value = id;
+                    preencherVenda();
+                }, 300);
+            }
+
+            function editarEstoque(id) {
+                const item = data.estoque.find(e => e.id === id);
+                if (!item) return;
+                $('#ent-modelo').value = item.modelo || '';
+                $('#ent-imei').value = item.imei || '';
+                $('#ent-cor').value = item.cor || '';
+                $('#ent-armazenamento').value = item.armazenamento || '';
+                $('#ent-custo').value = item.custo || 0;
+                $('#ent-preco').value = item.preco || 0;
+                $('#ent-fornecedor').value = item.fornecedor || '';
+                $('#ent-tel-fornecedor').value = item.telFornecedor || '';
+                $('#ent-condicao').value = item.condicao || 'Novo';
+                $('#ent-garantia').value = item.garantiaMeses || 12;
+                $('#ent-bateria').value = item.bateria || 100;
+                $('#ent-conservacao').value = item.conservacao || '';
+                $('#ent-obs').value = item.obs || '';
+                atualizarCondicaoEntrada();
+                $('#form-entrada').dataset.editId = id;
+                navegar('entrada');
+                toast('Editando item. Altere os campos e salve.', 'aviso');
+            }
+
+            function excluirEstoque(id) {
+                if (!confirm('Excluir este item permanentemente?')) return;
+                const idx = data.estoque.findIndex(e => e.id === id);
+                if (idx >= 0) {
+                    const item = data.estoque[idx];
+                    data.estoque.splice(idx, 1);
+                    saveData();
+                    addLog('Exclusão', `Item ${item.modelo} IMEI ${item.imei} excluído.`);
+                    renderEstoque();
+                    toast('Item excluído.', 'aviso');
+                }
+            }
+
+            // ============ ENTRADA INDIVIDUAL ============
+            function salvarEntrada(event) {
+                event.preventDefault();
+                const editId = $('#form-entrada').dataset.editId;
+                const item = {
+                    id: editId || genId(),
+                    modelo: $('#ent-modelo').value.trim(),
+                    imei: $('#ent-imei').value.trim(),
+                    cor: $('#ent-cor').value.trim(),
+                    armazenamento: $('#ent-armazenamento').value.trim(),
+                    custo: parseFloat($('#ent-custo').value) || 0,
+                    preco: parseFloat($('#ent-preco').value) || 0,
+                    fornecedor: $('#ent-fornecedor').value.trim(),
+                    telFornecedor: $('#ent-tel-fornecedor').value.trim(),
+                    condicao: $('#ent-condicao').value,
+                    garantiaMeses: parseInt($('#ent-garantia').value) || 12,
+                    bateria: $('#ent-bateria')?.value || null,
+                    conservacao: $('#ent-conservacao')?.value || '',
+                    obs: $('#ent-obs').value.trim(),
+                    status: 'disponivel',
+                    dataEntrada: new Date().toISOString()
+                };
+                const garantiaMeses = item.garantiaMeses || (item.condicao === 'Seminovo' ? 1 : 12);
+                item.garantiaAte = new Date(new Date().setMonth(new Date().getMonth() + garantiaMeses)).toISOString();
+                if (!item.modelo || !item.imei) return toast('Modelo e IMEI são obrigatórios.', 'erro');
+                if (!validarIMEI(item.imei)) {
+                    if (!confirm('IMEI inválido! Deseja continuar mesmo assim?')) return;
+                }
+                if (item.fornecedor && !data.fornecedores.find(f => f.nome.toLowerCase() === item.fornecedor.toLowerCase())) {
+                    data.fornecedores.push({ id: genId(), nome: item.fornecedor, telefone: item.telFornecedor || '', email: '' });
+                }
+                if (editId) {
+                    const idx = data.estoque.findIndex(e => e.id === editId);
+                    if (idx >= 0) { data.estoque[idx] = item; addLog('Edição', `Item ${item.modelo} IMEI ${item.imei} editado.`); }
+                    $('#form-entrada').removeAttribute('data-edit-id');
+                } else {
+                    data.estoque.push(item);
+                    addLog('Entrada', `Item ${item.modelo} IMEI ${item.imei} adicionado.`);
+                }
+                saveData();
+                limparFormEntrada();
+                preencherDatalists();
+                toast('Item salvo com sucesso!', '');
+                renderEstoque();
+            }
+
+            function limparFormEntrada() {
+                ['modelo','imei','cor','armazenamento','custo','preco','fornecedor','tel-fornecedor','garantia','bateria','conservacao','obs'].forEach(id => { const el = $('#ent-' + id); if (el) el.value = ''; });
+                $('#ent-condicao').value = 'Novo';
+                $('#ent-garantia').value = '12';
+                $('#extra-seminovo-ent').style.display = 'none';
+                $('#form-entrada').removeAttribute('data-edit-id');
+            }
+
+            function atualizarCondicaoEntrada() {
+                const cond = $('#ent-condicao').value;
+                $('#extra-seminovo-ent').style.display = cond === 'Seminovo' ? 'block' : 'none';
+                $('#ent-garantia').value = cond === 'Seminovo' ? '1' : '12';
+            }
+
+            function atualizarTelFornEntrada() {
+                const nome = $('#ent-fornecedor').value.trim();
+                const forn = data.fornecedores.find(f => f.nome.toLowerCase() === nome.toLowerCase());
+                $('#ent-tel-fornecedor').value = forn ? forn.telefone : '';
+            }
+
+            function validarIMEIVisual(el) {
+                if (el.value.length === 15) {
+                    if (validarIMEI(el.value)) { el.classList.add('imei-valid'); el.classList.remove('imei-invalid'); }
+                    else { el.classList.add('imei-invalid'); el.classList.remove('imei-valid'); }
+                } else { el.classList.remove('imei-valid', 'imei-invalid'); }
+            }
+
+            function salvarEntradaModal(event) {
+                event.preventDefault();
+                const form = $('#form-entrada');
+                if (form) form.dispatchEvent(new Event('submit'));
+                $('#modal-entrada').style.display = 'none';
+            }
+
+            function abrirModalEntrada() {
+                limparFormEntrada();
+                preencherDatalists();
+                $('#modal-entrada').style.display = 'flex';
+            }
+
+            // ============ ENTRADA EM LOTE ============
+            function abrirModalLote() {
+                preencherDatalists();
+                $('#lote-imeis').value = '';
+                $('#lote-qtd-gerar').value = '';
+                $('#modal-lote').style.display = 'flex';
+            }
+
+            function salvarLote(event) {
+                event.preventDefault();
+                const modelo = $('#lote-modelo').value.trim();
+                const cor = $('#lote-cor').value.trim();
+                const armazenamento = $('#lote-armazenamento').value.trim();
+                const condicao = $('#lote-condicao').value;
+                const garantiaMeses = parseInt($('#lote-garantia').value) || 12;
+                const fornecedor = $('#lote-fornecedor').value.trim();
+                const telFornecedor = $('#lote-tel-fornecedor').value.trim();
+                const custo = parseFloat($('#lote-custo').value) || 0;
+                const preco = parseFloat($('#lote-preco').value) || 0;
+                let imeisStr = $('#lote-imeis').value.trim();
+                const qtdGerar = parseInt($('#lote-qtd-gerar').value) || 0;
+                let imeis = imeisStr ? imeisStr.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length === 15 && /^\d+$/.test(s)) : [];
+                if (imeis.length === 0 && qtdGerar > 0) {
+                    for (let i = 0; i < qtdGerar; i++) {
+                        let base = '350000000000000';
+                        let suffix = String(Math.floor(Math.random() * 100000)).padStart(5, '0');
+                        imeis.push(base.slice(0, 10) + suffix);
+                    }
+                }
+                if (imeis.length === 0) return toast('Informe ao menos um IMEI ou quantidade para gerar.', 'erro');
+                let adicionados = 0, duplicados = 0;
+                imeis.forEach(imei => {
+                    if (data.estoque.find(e => e.imei === imei)) { duplicados++; return; }
+                    const item = {
+                        id: genId(), modelo, imei, cor, armazenamento, custo, preco, fornecedor, telFornecedor,
+                        condicao, garantiaMeses, garantiaAte: new Date(new Date().setMonth(new Date().getMonth() + garantiaMeses)).toISOString(),
+                        bateria: null, conservacao: '', obs: '', status: 'disponivel', dataEntrada: new Date().toISOString()
+                    };
+                    data.estoque.push(item);
+                    adicionados++;
+                });
+                if (fornecedor && !data.fornecedores.find(f => f.nome.toLowerCase() === fornecedor.toLowerCase())) {
+                    data.fornecedores.push({ id: genId(), nome: fornecedor, telefone: telFornecedor, email: '' });
+                }
+                saveData();
+                addLog('Entrada em Lote', `${adicionados} itens adicionados (modelo: ${modelo}). ${duplicados} duplicados ignorados.`);
+                preencherDatalists();
+                $('#modal-lote').style.display = 'none';
+                toast(`${adicionados} itens adicionados. ${duplicados>0?duplicados+' duplicados ignorados.':''}`, '');
+                renderEstoque();
+            }
+
+            // ============ VENDA INDIVIDUAL ============
+            function preencherVenda() {
+                const sel = $('#saida-item');
+                if (!sel || !sel.value) return;
+                const opt = sel.selectedOptions[0];
+                $('#saida-modelo').value = opt.dataset.modelo || '';
+                $('#saida-imei').value = opt.dataset.imei || '';
+                $('#saida-custo').value = 'R$ ' + parseFloat(opt.dataset.custo || 0).toFixed(2);
+                $('#saida-valor').value = opt.dataset.preco || '';
+                $('#saida-despesas').value = '0';
+                calcLucroPreview();
+                toggleParcelasVenda();
+            }
+
+            function calcLucroPreview() {
+                const valor = parseFloat($('#saida-valor').value) || 0;
+                const custoStr = $('#saida-custo').value.replace('R$ ', '').replace(',', '.');
+                const custo = parseFloat(custoStr) || 0;
+                const despesas = parseFloat($('#saida-despesas').value) || 0;
+                const lucro = valor - custo - despesas;
+                $('#saida-lucro').value = 'R$ ' + lucro.toFixed(2);
+            }
+
+            function toggleParcelasVenda() {
+                const pgto = $('#saida-pagamento').value;
+                const show = pgto === 'Crédito parcelado';
+                $('#grupo-parcelas').style.display = show ? 'flex' : 'none';
+                $('#grupo-valor-parcela').style.display = show ? 'flex' : 'none';
+                if (show) calcParcelaVenda();
+            }
+
+            function calcParcelaVenda() {
+                const valor = parseFloat($('#saida-valor').value) || 0;
+                const parcelas = parseInt($('#saida-parcelas').value) || 2;
+                $('#saida-valor-parcela').value = 'R$ ' + (valor / parcelas).toFixed(2);
+            }
+
+            function realizarVenda(event) {
+                event.preventDefault();
+                const itemId = $('#saida-item').value;
+                const item = data.estoque.find(e => e.id === itemId);
+                if (!item || item.status !== 'disponivel') return toast('Item não disponível.', 'erro');
+                const valorVenda = parseFloat($('#saida-valor').value) || 0;
+                const despesas = parseFloat($('#saida-despesas').value) || 0;
+                const lucro = valorVenda - (parseFloat(item.custo) || 0) - despesas;
+                const pagamento = $('#saida-pagamento').value;
+                const parcelas = pagamento === 'Crédito parcelado' ? parseInt($('#saida-parcelas').value) || 2 : null;
+                const cliente = $('#saida-cliente').value.trim();
+                const obs = $('#saida-obs').value.trim();
+                if (!cliente) return toast('Cliente é obrigatório.', 'erro');
+                const statusVenda = pagamento === 'Fiado' ? 'fiado' : 'concluida';
+                const venda = {
+                    id: genId(), itemId: item.id, modelo: item.modelo, imei: item.imei, condicao: item.condicao,
+                    cor: item.cor, armazenamento: item.armazenamento, custo: item.custo, valorVenda, despesas, lucro,
+                    pagamento, parcelas, cliente, obs, status: statusVenda, data: new Date().toISOString(),
+                    garantiaAte: item.garantiaAte || null, bateria: item.bateria || null, conservacao: item.conservacao || ''
+                };
+                data.vendas.push(venda);
+                item.status = 'vendido';
+                if (!data.clientes.find(c => c.nome.toLowerCase() === cliente.toLowerCase())) {
+                    data.clientes.push({ id: genId(), nome: cliente, telefone: '', email: '' });
+                }
+                saveData();
+                addLog('Venda', `Venda: ${item.modelo} IMEI ${item.imei} por R$${valorVenda.toFixed(2)} (${pagamento}) - Cliente: ${cliente}`);
+                preencherDatalists();
+                limparFormVenda();
+                toast('Venda realizada com sucesso! Lucro: R$ ' + lucro.toFixed(2), '');
+                renderEstoque();
+                renderVendas();
+            }
+
+            function limparFormVenda() {
+                ['saida-item','saida-modelo','saida-imei','saida-custo','saida-valor','saida-despesas','saida-lucro','saida-cliente','saida-obs'].forEach(id => { const el = $('#' + id); if (el) el.value = ''; });
+                $('#saida-pagamento').value = 'PIX';
+                $('#saida-parcelas').value = '2';
+                $('#saida-valor-parcela').value = '';
+                toggleParcelasVenda();
+            }
+
+            // ============ VENDA EM LOTE ============
+            function abrirModalVendaLote() {
+                preencherDatalists();
+                renderVendaLoteTabela();
+                $('#modal-venda-lote').style.display = 'flex';
+            }
+
+            function renderVendaLoteTabela() {
+                const filtro = ($('#filtro-lote-venda')?.value || '').toLowerCase();
+                const disp = data.estoque.filter(e => e.status === 'disponivel' && (e.modelo.toLowerCase().includes(filtro) || e.imei.includes(filtro)));
+                $('#tabela-venda-lote').innerHTML = disp.map(e => `
+                <tr><td><input type="checkbox" class="check-lote-item" value="${e.id}"></td>
+                <td>${e.modelo}</td><td>${e.imei}</td><td>${e.condicao||'-'}</td><td>${e.cor||'-'}</td><td>${e.armazenamento||'-'}</td><td>R$${parseFloat(e.preco||0).toFixed(2)}</td></tr>`).join('') || '<tr><td colspan="7" class="empty-state">Nenhum item disponível.</td></tr>';
+            }
+
+            function toggleTodosLote() { const checked = $('#check-todos-lote').checked; $$('.check-lote-item').forEach(cb => cb.checked = checked); }
+            function toggleParcelasVL() { $('#vl-grupo-parcelas').style.display = $('#vl-pagamento').value === 'Crédito parcelado' ? 'flex' : 'none'; }
+
+            function confirmarVendaLote(event) {
+                event.preventDefault();
+                const selecionados = [...$$('.check-lote-item:checked')].map(cb => cb.value);
+                if (selecionados.length === 0) return toast('Selecione ao menos um item.', 'erro');
+                const pagamento = $('#vl-pagamento').value;
+                const parcelas = pagamento === 'Crédito parcelado' ? parseInt($('#vl-parcelas').value) || 2 : null;
+                const desconto = parseFloat($('#vl-desconto').value) || 0;
+                const despesas = parseFloat($('#vl-despesas').value) || 0;
+                const cliente = $('#vl-cliente').value.trim();
+                const obs = $('#vl-obs').value.trim();
+                if (!cliente) return toast('Cliente é obrigatório.', 'erro');
+                const statusVenda = pagamento === 'Fiado' ? 'fiado' : 'concluida';
+                let count = 0;
+                selecionados.forEach(id => {
+                    const item = data.estoque.find(e => e.id === id);
+                    if (!item || item.status !== 'disponivel') return;
+                    const valorVenda = (parseFloat(item.preco) || 0) - desconto;
+                    const lucro = valorVenda - (parseFloat(item.custo) || 0) - despesas;
+                    const venda = {
+                        id: genId(), itemId: item.id, modelo: item.modelo, imei: item.imei, condicao: item.condicao,
+                        cor: item.cor, armazenamento: item.armazenamento, custo: item.custo, valorVenda, despesas, lucro,
+                        pagamento, parcelas, cliente, obs, status: statusVenda, data: new Date().toISOString(),
+                        garantiaAte: item.garantiaAte || null, bateria: item.bateria || null, conservacao: item.conservacao || ''
+                    };
+                    data.vendas.push(venda);
+                    item.status = 'vendido';
+                    count++;
+                });
+                if (!data.clientes.find(c => c.nome.toLowerCase() === cliente.toLowerCase())) {
+                    data.clientes.push({ id: genId(), nome: cliente, telefone: '', email: '' });
+                }
+                saveData();
+                addLog('Venda em Lote', `${count} itens vendidos para ${cliente}.`);
+                preencherDatalists();
+                $('#modal-venda-lote').style.display = 'none';
+                toast(`${count} vendas realizadas.`, '');
+                renderEstoque();
+                renderVendas();
+            }
+
+            // ============ HISTÓRICO DE VENDAS ============
+            function renderVendas() {
+                const filtro = $('#filtro-status-vendas')?.value || 'todos';
+                const busca = ($('#busca-vendas')?.value || '').toLowerCase();
+                let vendas = [...data.vendas].sort((a, b) => new Date(b.data) - new Date(a.data));
+                if (filtro !== 'todos') vendas = vendas.filter(v => v.status === filtro);
+                if (busca) vendas = vendas.filter(v => v.modelo.toLowerCase().includes(busca) || v.imei.includes(busca) || (v.cliente || '').toLowerCase().includes(busca));
+                const tbody = $('#tabela-vendas tbody');
+                if (!tbody) return;
+                tbody.innerHTML = vendas.map(v => `
+                <tr class="clickable ${v.status==='fiado'?'highlight-fiado':''}" onclick="window.abrirDetalhesVenda('${v.id}')">
+                <td>${new Date(v.data).toLocaleDateString('pt-BR')}</td><td>${v.modelo}</td><td>${v.imei}</td>
+                <td>R$${parseFloat(v.valorVenda||0).toFixed(2)}</td><td>R$${parseFloat(v.lucro||0).toFixed(2)}</td>
+                <td>R$${parseFloat(v.despesas||0).toFixed(2)}</td><td>${v.pagamento}${v.parcelas?' ('+v.parcelas+'x)':''}</td>
+                <td>${v.cliente||'-'}</td><td><span class="badge ${v.status==='concluida'?'badge-green':v.status==='fiado'?'badge-yellow':'badge-red'}">${v.status}</span></td>
+                <td style="white-space:nowrap;" onclick="event.stopPropagation();">
+                ${v.status==='fiado'?`<button class="btn-icon btn-sm" title="Receber" onclick="window.receberFiado('${v.id}')">💰</button>`:''}
+                ${v.status!=='cancelada'?`<button class="btn-icon btn-sm" title="Cancelar" onclick="window.cancelarVenda('${v.id}')">❌</button>`:''}
+                <button class="btn-icon btn-sm" title="Recibo" onclick="window.abrirRecibo('${v.id}')">🧾</button>
+                </td></tr>`).join('') || '<tr><td colspan="10" class="empty-state">Nenhuma venda encontrada.</td></tr>';
+            }
+
+            function receberFiado(id) {
+                const venda = data.vendas.find(v => v.id === id);
+                if (!venda || venda.status !== 'fiado') return;
+                if (!confirm(`Confirmar recebimento de R$${parseFloat(venda.valorVenda||0).toFixed(2)} de ${venda.cliente}?`)) return;
+                venda.status = 'concluida';
+                saveData();
+                addLog('Recebimento', `Fiado recebido: ${venda.modelo} IMEI ${venda.imei} - ${venda.cliente}`);
+                renderVendas();
+                toast('Recebimento confirmado!', '');
+            }
+
+            function cancelarVenda(id) {
+                const venda = data.vendas.find(v => v.id === id);
+                if (!venda || venda.status === 'cancelada') return;
+                if (!confirm(`Cancelar venda de ${venda.modelo} IMEI ${venda.imei}? O item voltará ao estoque.`)) return;
+                venda.status = 'cancelada';
+                const item = data.estoque.find(e => e.id === venda.itemId);
+                if (item) item.status = 'disponivel';
+                saveData();
+                addLog('Cancelamento', `Venda cancelada: ${venda.modelo} IMEI ${venda.imei}`);
+                renderVendas();
+                renderEstoque();
+                toast('Venda cancelada. Item retornou ao estoque.', 'aviso');
+            }
+
+            function abrirDetalhesVenda(id) {
+                const v = data.vendas.find(vd => vd.id === id);
+                if (!v) return;
+                $('#detalhes-venda-inner').innerHTML = `
+                <h3>Detalhes da Venda</h3>
+                <p><strong>Modelo:</strong> ${v.modelo}</p><p><strong>IMEI:</strong> ${v.imei}</p>
+                <p><strong>Condição:</strong> ${v.condicao||'-'}</p><p><strong>Cor:</strong> ${v.cor||'-'}</p>
+                <p><strong>Armazenamento:</strong> ${v.armazenamento||'-'}</p>
+                <p><strong>Bateria:</strong> ${v.bateria??'N/A'}%</p><p><strong>Conservação:</strong> ${v.conservacao||'-'}</p>
+                <p><strong>Valor:</strong> R$${parseFloat(v.valorVenda||0).toFixed(2)}</p>
+                <p><strong>Lucro:</strong> R$${parseFloat(v.lucro||0).toFixed(2)}</p>
+                <p><strong>Pagamento:</strong> ${v.pagamento}${v.parcelas?' ('+v.parcelas+'x de R$'+(parseFloat(v.valorVenda||0)/v.parcelas).toFixed(2)+')':''}</p>
+                <p><strong>Cliente:</strong> ${v.cliente||'-'}</p><p><strong>Data:</strong> ${new Date(v.data).toLocaleString('pt-BR')}</p>
+                <p><strong>Status:</strong> ${v.status}</p>`;
+                $('#modal-detalhes-venda').style.display = 'flex';
+            }
+
+            // ============ RECIBO ============
+            function abrirRecibo(id) {
+                const v = data.vendas.find(vd => vd.id === id);
+                if (!v) return;
+                const cfg = getConfig();
+                const logoHTML = cfg.logo ? `<img src="${cfg.logo}" style="max-height:60px;margin-bottom:8px;" alt="Logo">` : '<h3>📱 Revenda iPhone</h3>';
+                $('#recibo-inner').innerHTML = `<div style="text-align:center;">${logoHTML}</div><hr>
+                <p><strong>Modelo:</strong> ${v.modelo}</p><p><strong>IMEI:</strong> ${v.imei}</p>
+                <p><strong>Condição:</strong> ${v.condicao||'-'}</p><p><strong>Garantia até:</strong> ${v.garantiaAte?new Date(v.garantiaAte).toLocaleDateString('pt-BR'):'N/A'}</p>
+                <p><strong>Valor:</strong> R$${parseFloat(v.valorVenda||0).toFixed(2)}</p>
+                <p><strong>Pagamento:</strong> ${v.pagamento}${v.parcelas?' ('+v.parcelas+'x de R$'+(parseFloat(v.valorVenda||0)/v.parcelas).toFixed(2)+')':''}</p>
+                <p><strong>Cliente:</strong> ${v.cliente||'-'}</p><p><strong>Data:</strong> ${new Date(v.data).toLocaleString('pt-BR')}</p>
+                <hr><p style="font-size:.8rem;color:var(--text2);">${cfg.termosGarantia||'Garantia conforme condições do produto.'}</p>`;
+                $('#modal-recibo').style.display = 'flex';
+            }
+
+            function copiarRecibo() { const texto = $('#recibo-inner').innerText; navigator.clipboard.writeText(texto).then(() => toast('Recibo copiado!', '')).catch(() => toast('Erro ao copiar.', 'erro')); }
+            function enviarWhatsApp() { const texto = encodeURIComponent($('#recibo-inner').innerText); window.open('https://wa.me/?text=' + texto, '_blank'); }
+
+            // ============ ETIQUETA ============
+            function abrirEtiqueta(imei) {
+                $('#etiqueta-imei').textContent = 'IMEI: ' + imei;
+                $('#modal-etiqueta').style.display = 'flex';
+                setTimeout(() => { try { JsBarcode('#barcode-svg', imei, { format: 'CODE128', width: 2, height: 60, displayValue: true, fontSize: 14, margin: 8 }); } catch (e) { $('#barcode-svg').html(''); } }, 200);
+            }
+
+            // ============ CLIENTES ============
+            function renderClientes() {
+                const tbody = $('#tabela-clientes');
+                if (!tbody) return;
+                tbody.innerHTML = data.clientes.map(c => {
+                    const compras = data.vendas.filter(v => v.cliente && v.cliente.toLowerCase() === c.nome.toLowerCase() && v.status !== 'cancelada').length;
+                    return `<tr><td>${c.nome}</td><td>${c.telefone||'-'}</td><td>${c.email||'-'}</td><td>${compras}</td><td><button class="btn-icon" onclick="window.editarCliente('${c.id}')">✏️</button><button class="btn-icon" onclick="window.excluirCliente('${c.id}')">🗑️</button></td></tr>`;
+                }).join('') || '<tr><td colspan="5" class="empty-state">Nenhum cliente cadastrado.</td></tr>';
+            }
+
+            function abrirModalCliente(id) {
+                if (id) {
+                    const c = data.clientes.find(cl => cl.id === id);
+                    if (!c) return;
+                    $('#cliente-id').value = c.id; $('#cliente-nome').value = c.nome; $('#cliente-tel').value = c.telefone || ''; $('#cliente-email').value = c.email || '';
+                    $('#titulo-modal-cliente').textContent = 'Editar Cliente';
+                } else {
+                    $('#cliente-id').value = ''; $('#cliente-nome').value = ''; $('#cliente-tel').value = ''; $('#cliente-email').value = '';
+                    $('#titulo-modal-cliente').textContent = 'Novo Cliente';
+                }
+                $('#modal-cliente').style.display = 'flex';
+            }
+            function editarCliente(id) { abrirModalCliente(id); }
+            function salvarCliente(event) {
+                event.preventDefault();
+                const id = $('#cliente-id').value;
+                const nome = $('#cliente-nome').value.trim();
+                const telefone = $('#cliente-tel').value.trim();
+                const email = $('#cliente-email').value.trim();
+                if (!nome) return toast('Nome é obrigatório.', 'erro');
+                if (id) { const c = data.clientes.find(cl => cl.id === id); if (c) { c.nome = nome; c.telefone = telefone; c.email = email; } }
+                else { data.clientes.push({ id: genId(), nome, telefone, email }); }
+                saveData(); addLog('Cliente', `Cliente ${nome} salvo.`); preencherDatalists();
+                $('#modal-cliente').style.display = 'none'; renderClientes(); toast('Cliente salvo!', '');
+            }
+            function excluirCliente(id) {
+                if (!confirm('Excluir este cliente?')) return;
+                const idx = data.clientes.findIndex(c => c.id === id);
+                if (idx >= 0) { data.clientes.splice(idx, 1); saveData(); addLog('Cliente', 'Cliente excluído.'); renderClientes(); toast('Cliente excluído.', 'aviso'); }
+            }
+
+            // ============ FORNECEDORES ============
+            function renderFornecedores() {
+                const tbody = $('#tabela-fornecedores');
+                if (!tbody) return;
+                tbody.innerHTML = data.fornecedores.map(f => {
+                    const itens = data.estoque.filter(e => e.fornecedor && e.fornecedor.toLowerCase() === f.nome.toLowerCase()).length;
+                    return `<tr><td>${f.nome}</td><td>${f.telefone||'-'}</td><td>${f.email||'-'}</td><td>${itens}</td><td><button class="btn-icon" onclick="window.editarFornecedor('${f.id}')">✏️</button><button class="btn-icon" onclick="window.excluirFornecedor('${f.id}')">🗑️</button></td></tr>`;
+                }).join('') || '<tr><td colspan="5" class="empty-state">Nenhum fornecedor cadastrado.</td></tr>';
+            }
+
+            function abrirModalFornecedor(id) {
+                if (id) {
+                    const f = data.fornecedores.find(fr => fr.id === id);
+                    if (!f) return;
+                    $('#fornecedor-id').value = f.id; $('#fornecedor-nome').value = f.nome; $('#fornecedor-tel').value = f.telefone || ''; $('#fornecedor-email').value = f.email || '';
+                    $('#titulo-modal-fornecedor').textContent = 'Editar Fornecedor';
+                } else {
+                    $('#fornecedor-id').value = ''; $('#fornecedor-nome').value = ''; $('#fornecedor-tel').value = ''; $('#fornecedor-email').value = '';
+                    $('#titulo-modal-fornecedor').textContent = 'Novo Fornecedor';
+                }
+                $('#modal-fornecedor').style.display = 'flex';
+            }
+            function editarFornecedor(id) { abrirModalFornecedor(id); }
+            function salvarFornecedor(event) {
+                event.preventDefault();
+                const id = $('#fornecedor-id').value;
+                const nome = $('#fornecedor-nome').value.trim();
+                const telefone = $('#fornecedor-tel').value.trim();
+                const email = $('#fornecedor-email').value.trim();
+                if (!nome) return toast('Nome é obrigatório.', 'erro');
+                const nomeAntigo = id ? data.fornecedores.find(f => f.id === id)?.nome : null;
+                if (id) { const f = data.fornecedores.find(fr => fr.id === id); if (f) { f.nome = nome; f.telefone = telefone; f.email = email; } }
+                else { data.fornecedores.push({ id: genId(), nome, telefone, email }); }
+                if (nomeAntigo && nomeAntigo !== nome) { data.estoque.forEach(e => { if (e.fornecedor === nomeAntigo) e.fornecedor = nome; }); }
+                saveData(); addLog('Fornecedor', `Fornecedor ${nome} salvo.`); preencherDatalists();
+                $('#modal-fornecedor').style.display = 'none'; renderFornecedores(); toast('Fornecedor salvo!', '');
+            }
+            function excluirFornecedor(id) {
+                if (!confirm('Excluir este fornecedor? Os itens associados permanecerão com o nome.')) return;
+                const idx = data.fornecedores.findIndex(f => f.id === id);
+                if (idx >= 0) { data.fornecedores.splice(idx, 1); saveData(); addLog('Fornecedor', 'Fornecedor excluído.'); renderFornecedores(); toast('Fornecedor excluído.', 'aviso'); }
+            }
+
+            // ============ GARANTIAS ============
+            function renderGarantias() {
+                const hoje = new Date();
+                const itensComGarantia = data.estoque.filter(e => e.garantiaAte && e.status === 'vendido');
+                const tbody = $('#tabela-garantias');
+                if (!tbody) return;
+                tbody.innerHTML = itensComGarantia.map(e => {
+                    const ate = new Date(e.garantiaAte);
+                    const dias = Math.ceil((ate - hoje) / (1000 * 60 * 60 * 24));
+                    let statusGarantia = 'expirada';
+                    if (dias > 30) statusGarantia = 'válida';
+                    else if (dias > 0) statusGarantia = 'expirando';
+                    return `<tr><td>${e.modelo}</td><td>${e.imei}</td><td>${new Date(e.dataEntrada||e.garantiaAte).toLocaleDateString('pt-BR')}</td><td>${ate.toLocaleDateString('pt-BR')}</td><td>${dias>0?dias:0}</td><td><span class="badge ${statusGarantia==='válida'?'badge-green':statusGarantia==='expirando'?'badge-yellow':'badge-red'}">${statusGarantia}</span></td><td><button class="btn-icon btn-sm" onclick="window.estenderGarantia('${e.id}')">📅 Estender</button></td></tr>`;
+                }).join('') || '<tr><td colspan="7" class="empty-state">Nenhum item com garantia.</td></tr>';
+            }
+
+            function estenderGarantia(id) {
+                const item = data.estoque.find(e => e.id === id);
+                if (!item) return;
+                const meses = prompt('Quantos meses adicionar de garantia?', '3');
+                if (!meses || isNaN(parseInt(meses))) return;
+                const m = parseInt(meses);
+                const atual = item.garantiaAte ? new Date(item.garantiaAte) : new Date();
+                if (atual < new Date()) atual.setTime(Date.now());
+                item.garantiaAte = new Date(atual.setMonth(atual.getMonth() + m)).toISOString();
+                item.garantiaMeses = (item.garantiaMeses || 0) + m;
+                saveData(); addLog('Garantia', `Garantia estendida em ${m} meses para IMEI ${item.imei}.`);
+                renderGarantias(); toast('Garantia estendida!', '');
+            }
+
+            // ============ LOG ============
+            function renderLog() {
+                const tbody = $('#tabela-log');
+                if (!tbody) return;
+                const logs = [...log].reverse();
+                tbody.innerHTML = logs.map(l => `<tr><td>${new Date(l.data).toLocaleString('pt-BR')}</td><td>${l.acao}</td><td>${l.detalhes||''}</td></tr>`).join('') || '<tr><td colspan="3" class="empty-state">Log vazio.</td></tr>';
+            }
+            function limparLog() { if (!confirm('Limpar todo o log de atividades?')) return; log = []; saveLog(); renderLog(); toast('Log limpo.', 'aviso'); }
+
+            // ============ CONFIG ============
+            function abrirConfig() { const cfg = getConfig(); $('#cfg-logo').value = cfg.logo || ''; $('#cfg-garantia').value = cfg.termosGarantia || ''; $('#modal-config').style.display = 'flex'; }
+            function salvarConfig(event) { event.preventDefault(); config.logo = $('#cfg-logo').value.trim(); config.termosGarantia = $('#cfg-garantia').value.trim(); saveConfig(); addLog('Configuração', 'Configurações atualizadas.'); $('#modal-config').style.display = 'none'; toast('Configurações salvas!', ''); }
+
+            // ============ TROCAR SENHA ============
+            function trocarSenha() { $('#senha-atual').value = ''; $('#senha-nova').value = ''; $('#senha-nova-conf').value = ''; $('#modal-trocar-senha').style.display = 'flex'; }
+            async function confirmarTrocaSenha(event) {
+                event.preventDefault();
+                const atual = $('#senha-atual').value;
+                const nova = $('#senha-nova').value;
+                const conf = $('#senha-nova-conf').value;
+                if (!await verificarSenha(atual)) return toast('Senha atual incorreta.', 'erro');
+                if (nova !== conf) return toast('Senhas não conferem.', 'erro');
+                if (nova.length < 3) return toast('Senha muito curta.', 'erro');
+                await definirSenha(nova);
+                addLog('Configuração', 'Senha alterada.');
+                $('#modal-trocar-senha').style.display = 'none';
+                toast('Senha alterada com sucesso!', '');
+            }
+
+            // ============ BACKUP / RESTAURAR / CSV ============
+            function fazerBackup() {
+                const backup = { estoque: data.estoque, vendas: data.vendas, fornecedores: data.fornecedores, clientes: data.clientes, log, config, versao: '2.0', data: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'backup_revenda_iphone_' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+                URL.revokeObjectURL(url); addLog('Backup', 'Backup exportado.'); toast('Backup criado!', '');
+            }
+            function restaurarBackup(input) {
+                const file = input.files[0]; if (!file) return;
+                if (!confirm('Restaurar backup? Todos os dados atuais serão substituídos.')) { input.value = ''; return; }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const backup = JSON.parse(e.target.result);
+                        if (!backup.estoque || !backup.vendas) throw new Error('Formato inválido');
+                        data.estoque = backup.estoque; data.vendas = backup.vendas; data.fornecedores = backup.fornecedores || []; data.clientes = backup.clientes || [];
+                        log = backup.log || []; config = backup.config || { logo: '', termosGarantia: '' };
+                        saveData(); saveLog(); saveConfig();
+                        addLog('Restauração', 'Dados restaurados de backup.');
+                        carregarTudo(); toast('Backup restaurado!', '');
+                    } catch (err) { toast('Arquivo de backup inválido.', 'erro'); }
+                };
+                reader.readAsText(file); input.value = '';
+            }
+            function exportarCSV() {
+                let csv = 'Tipo,Modelo,IMEI,Condição,Cor,Armazenamento,Custo,Preço,Status,Fornecedor\n';
+                data.estoque.forEach(e => { csv += `Estoque,${e.modelo},${e.imei},${e.condicao||''},${e.cor||''},${e.armazenamento||''},${e.custo||0},${e.preco||0},${e.status},${e.fornecedor||''}\n`; });
+                csv += '\nData,Modelo,IMEI,Venda,Lucro,Despesas,Pagamento,Cliente,Status\n';
+                data.vendas.forEach(v => { csv += `${new Date(v.data).toLocaleDateString('pt-BR')},${v.modelo},${v.imei},${v.valorVenda||0},${v.lucro||0},${v.despesas||0},${v.pagamento},${v.cliente||''},${v.status}\n`; });
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'exportacao_revenda_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
+                URL.revokeObjectURL(url); toast('CSV exportado!', '');
+            }
+
+            // Tema
+            function toggleTema() { const atual = localStorage.getItem(K_TEMA) || 'claro'; const novo = atual === 'claro' ? 'escuro' : 'claro'; localStorage.setItem(K_TEMA, novo); aplicarTema(); }
+
+            // Login / Logout
+            async function fazerLogin() {
+                const senha = $('#login-password').value;
+                if (await verificarSenha(senha)) {
+                    if (!localStorage.getItem(K_PWHASH) && senha === 'admin') await definirSenha('admin');
+                    sessionActive = true; localStorage.setItem(K_SESSION, 'ativo');
+                    $('#login-screen').classList.add('hidden'); $('#login-error').textContent = '';
+                    carregarTudo(); addLog('Login', 'Usuário autenticado.');
+                } else { $('#login-error').textContent = 'Senha incorreta.'; }
+            }
+            function fazerLogout() { sessionActive = false; localStorage.setItem(K_SESSION, ''); $('#login-screen').classList.remove('hidden'); $('#login-password').value = ''; addLog('Logout', 'Usuário saiu.'); fecharSidebar(); }
+
+            // ============ INICIALIZAÇÃO ============
+            function init() {
+                if (!localStorage.getItem(K_PWHASH)) { localStorage.setItem(K_SESSION, ''); }
+                checkSession();
+                if (sessionActive) carregarTudo();
+                document.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !sessionActive) fazerLogin(); });
+                habilitarOrdenacao();
+
+                // Hamburger menu
+                const hamburger = document.createElement('button');
+                hamburger.className = 'hamburger'; hamburger.textContent = '☰'; hamburger.onclick = toggleSidebar;
+                const header = document.querySelector('#main-content');
+                if (header && !document.querySelector('.hamburger')) { header.insertBefore(hamburger, header.firstChild); }
+
+                atualizarCondicaoEntrada();
+                preencherDatalists();
+
+                // DELEGAÇÃO DE EVENTOS para botões críticos (funciona mesmo se o DOM mudar)
+                document.addEventListener('click', function(e) {
+                    const target = e.target.closest('button');
+                    if (!target) return;
+
+                    // "+ Entrada" na página de estoque
+                    if (target.closest('#page-estoque') && target.classList.contains('btn-primary') && target.textContent.includes('Entrada')) {
+                        e.preventDefault();
+                        abrirModalEntrada();
+                        return;
+                    }
+                    // "📥 Lote" na página de estoque
+                    if (target.closest('#page-estoque') && target.classList.contains('btn-outline') && target.textContent.includes('Lote')) {
+                        e.preventDefault();
+                        abrirModalLote();
+                        return;
+                    }
+                    // "📥 Entrada em Lote" na página de entrada
+                    if (target.closest('#page-entrada') && target.classList.contains('btn-outline') && target.textContent.includes('Entrada em Lote')) {
+                        e.preventDefault();
+                        abrirModalLote();
+                        return;
+                    }
+                    // "📦 Venda em Lote" na página de saída
+                    if (target.closest('#page-saida') && target.classList.contains('btn-outline') && target.textContent.includes('Venda em Lote')) {
+                        e.preventDefault();
+                        abrirModalVendaLote();
+                        return;
+                    }
+                });
+            }
+
+            // Expor funções globalmente
+            window.navegar = navegar; window.fecharSidebar = fecharSidebar; window.toggleTema = toggleTema;
+            window.fazerLogin = fazerLogin; window.fazerLogout = fazerLogout; window.fazerBackup = fazerBackup;
+            window.restaurarBackup = restaurarBackup; window.exportarCSV = exportarCSV; window.abrirConfig = abrirConfig;
+            window.salvarConfig = salvarConfig; window.trocarSenha = trocarSenha; window.confirmarTrocaSenha = confirmarTrocaSenha;
+            window.salvarEntrada = salvarEntrada; window.salvarEntradaModal = salvarEntradaModal;
+            window.abrirModalEntrada = abrirModalEntrada; window.abrirModalLote = abrirModalLote;
+            window.salvarLote = salvarLote; window.validarIMEIVisual = validarIMEIVisual;
+            window.atualizarCondicaoEntrada = atualizarCondicaoEntrada; window.atualizarTelFornEntrada = atualizarTelFornEntrada;
+            window.realizarVenda = realizarVenda; window.preencherVenda = preencherVenda;
+            window.calcLucroPreview = calcLucroPreview; window.toggleParcelasVenda = toggleParcelasVenda;
+            window.calcParcelaVenda = calcParcelaVenda; window.abrirModalVendaLote = abrirModalVendaLote;
+            window.renderVendaLoteTabela = renderVendaLoteTabela; window.toggleTodosLote = toggleTodosLote;
+            window.toggleParcelasVL = toggleParcelasVL; window.confirmarVendaLote = confirmarVendaLote;
+            window.renderEstoque = renderEstoque; window.renderVendas = renderVendas;
+            window.venderDoEstoque = venderDoEstoque; window.editarEstoque = editarEstoque;
+            window.excluirEstoque = excluirEstoque; window.receberFiado = receberFiado;
+            window.cancelarVenda = cancelarVenda; window.abrirDetalhesVenda = abrirDetalhesVenda;
+            window.abrirRecibo = abrirRecibo; window.copiarRecibo = copiarRecibo; window.enviarWhatsApp = enviarWhatsApp;
+            window.abrirEtiqueta = abrirEtiqueta; window.abrirModalCliente = abrirModalCliente;
+            window.editarCliente = editarCliente; window.salvarCliente = salvarCliente;
+            window.excluirCliente = excluirCliente; window.abrirModalFornecedor = abrirModalFornecedor;
+            window.editarFornecedor = editarFornecedor; window.salvarFornecedor = salvarFornecedor;
+            window.excluirFornecedor = excluirFornecedor; window.renderGarantias = renderGarantias;
+            window.estenderGarantia = estenderGarantia; window.renderLog = renderLog; window.limparLog = limparLog;
+            window.buscaGlobal = buscaGlobal; window.renderClientes = renderClientes;
+            window.renderFornecedores = renderFornecedores;
+
+            init();
+        })();
+    </script>
+</body>
+</html>
